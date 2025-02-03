@@ -26,6 +26,7 @@ export function useColorMode(): UseColorModeReturn {
   const toggleColorMode = () => {
     setTheme(resolvedTheme === "light" ? "dark" : "light");
   };
+  
   return {
     colorMode: resolvedTheme as ColorMode,
     setColorMode: setTheme,
@@ -49,7 +50,8 @@ export const ColorModeButton = React.forwardRef<
   HTMLButtonElement,
   ColorModeButtonProps
 >(function ColorModeButton(props, ref) {
-  const { toggleColorMode } = useColorMode()
+  const { toggleColorMode } = useColorMode();
+
   return (
     <ClientOnly fallback={<Skeleton boxSize="8" />}>
       <IconButton
@@ -62,7 +64,7 @@ export const ColorModeButton = React.forwardRef<
         css={{
           _icon: {
             width: "5",
-            height: "5",
+            height: "5"
           },
         }}
       >

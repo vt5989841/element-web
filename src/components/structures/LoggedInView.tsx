@@ -35,7 +35,6 @@ import PlatformPeg from "../../PlatformPeg";
 import { DefaultTagID } from "../../stores/room-list/models";
 import { hideToast as hideServerLimitToast, showToast as showServerLimitToast } from "../../toasts/ServerLimitToast";
 import { Action } from "../../dispatcher/actions";
-import LeftPanel from "@safemeet/components/LeftPanel";
 import { ViewRoomDeltaPayload } from "../../dispatcher/payloads/ViewRoomDeltaPayload";
 import RoomListStore from "../../stores/room-list/RoomListStore";
 import NonUrgentToastContainer from "./NonUrgentToastContainer";
@@ -67,6 +66,7 @@ import { monitorSyncedPushRules } from "../../utils/pushRules/monitorSyncedPushR
 import { ConfigOptions } from "../../SdkConfig";
 import { MatrixClientContextProvider } from "./MatrixClientContextProvider";
 import { Landmark, LandmarkNavigation } from "../../accessibility/LandmarkNavigation";
+import LeftPanel from "./LeftPanel";
 
 // We need to fetch each pinned message individually (if we don't already have it)
 // so each pinned message may trigger a request. Limit the number per room for sanity.

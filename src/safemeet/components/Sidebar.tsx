@@ -1,98 +1,55 @@
-import React, { useState } from "react";
-import {
-    Box,
-    VStack,
-    HStack,
-    IconButton,
-    Text,
-    Button,
-} from "@chakra-ui/react";
-import {
-    DrawerActionTrigger,
-    DrawerBackdrop,
-    DrawerBody,
-    DrawerCloseTrigger,
-    DrawerContent,
-    DrawerFooter,
-    DrawerHeader,
-    DrawerRoot,
-    DrawerTitle,
-    DrawerTrigger,
-} from "@safemeet/components/ui/drawer";
-import { FaHome, FaStar, FaUserFriends, FaVideo, FaPlus } from "react-icons/fa";
+import { Button, Flex, Text, VStack, type FlexProps } from "@chakra-ui/react";
+import React from "react";
+import { HomeIcon } from "./icons/HomeIcon";
+import { ChatIcon } from "./icons/ChatIcon";
+import { MeetIcon } from "./icons/MeetIcon";
+import { CallIcon } from "./icons/CallIcon";
+import { FolderIcon } from "./icons/FolderIcon";
+import { ColorModeButton } from "./ui/color-mode";
+import { SettingIcon } from "./icons/SettingIcon";
+import UserMenu from "@components/structures/UserMenu";
 
-const Sidebar: React.FC = () => {
-    const [isCollapsed, setIsCollapsed] = useState(true);
-    const [open, setOpen] = useState(false);
-
-    const toggleCollapse = () => setIsCollapsed(!isCollapsed);
+export const Sidebar = (props: { className?: string; css?: FlexProps["css"] }) => {
+    const { className, css } = props;
 
     return (
-        <Box
-            as="nav"
-            w={isCollapsed ? "60px" : "200px"}
-            p={4}
-            transition="width 0.2s"
-            overflow="hidden"
-        >
-            <VStack align="start" spaceY={4}>
-                <IconButton
-                    aria-label="Toggle Collapse"
-                    onClick={toggleCollapse}
-                    variant="ghost"
-                    colorScheme="teal">
-                    {isCollapsed ? <FaPlus /> : <FaHome />}
-                </IconButton>
-                <HStack>
-                    <FaHome />
-                    {!isCollapsed && <Text>Home</Text>}
-                </HStack>
-                <HStack>
-                    <FaStar />
-                    {!isCollapsed && <Text>Favourites</Text>}
-                </HStack>
-                <HStack>
-                    <FaUserFriends />
-                    {!isCollapsed && <Text>People</Text>}
-                </HStack>
-                <HStack>
-                    <FaVideo />
-                    {!isCollapsed && <Text>Video Rooms</Text>}
-                </HStack>
-                <DrawerRoot open={open} onOpenChange={(e: any) => setOpen(e.open)}>
-                    <DrawerBackdrop />
-                    <DrawerTrigger asChild>
-                        <Button
-                            onClick={() => setOpen(true)}
-                            variant="solid"
-                            colorScheme="teal"
-                        >
-                            <FaPlus />
-                            {!isCollapsed && "Create Space"}
-                        </Button>
-                    </DrawerTrigger>
-                    <DrawerContent>
-                        <DrawerHeader>
-                            <DrawerTitle>Create a new space</DrawerTitle>
-                        </DrawerHeader>
-                        <DrawerBody>
-                            <p>
-                                {/* Add form or content for creating a new space */}
-                                Lorem ipsum dolor sit amet, consectetur adipiscing elit.
-                            </p>
-                        </DrawerBody>
-                        <DrawerFooter>
-                            <DrawerActionTrigger asChild>
-                                <Button variant="outline">Cancel</Button>
-                            </DrawerActionTrigger>
-                            <Button>Save</Button>
-                        </DrawerFooter>
-                        <DrawerCloseTrigger />
-                    </DrawerContent>
-                </DrawerRoot>
-            </VStack>
-        </Box>
+        <Flex className={className} direction="column" css={css} alignItems="center" justifyContent="space-between">
+            <Flex direction="column" alignItems="center" gap={4}>
+                <SidebarItem
+                    icon={<HomeIcon />}
+                    text="Home" />
+                <SidebarItem
+                    icon={<MeetIcon />}
+                    text="Meets" />
+                <SidebarItem
+                    icon={<ChatIcon />}
+                    text="Chats" />
+                <SidebarItem
+                    icon={<CallIcon />}
+                    text="Calls" />
+                <SidebarItem
+                    icon={<FolderIcon />}
+                    text="My Files" />
+            </Flex>
+            <Flex direction="column" p={2} alignItems="center" justifyContent="center">
+                <ColorModeButton />
+                <SidebarItem
+                    icon={<SettingIcon />} />
+                <UserMenu isPanelCollapsed />
+            </Flex>
+        </Flex>
     );
 };
 
-export default Sidebar;
+const SidebarItem = (props: { icon: React.ReactNode, text?: string }) => {
+    const { icon, text } = props;
+
+    return (
+        <Button w={12} h={12} p={1} _icon={{ w: 5, h: 5 }}>
+            <VStack>
+                {icon}
+                <Text fontSize="xs">{text}</Text>
+            </VStack>
+        </Button>
+    );
+};
