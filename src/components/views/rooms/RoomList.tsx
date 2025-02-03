@@ -57,6 +57,7 @@ import { getKeyBindingsManager } from "../../../KeyBindingsManager";
 import AccessibleButton from "../elements/AccessibleButton";
 import { Landmark, LandmarkNavigation } from "../../../accessibility/LandmarkNavigation";
 import LegacyCallHandler, { LegacyCallHandlerEvent } from "../../../LegacyCallHandler.tsx";
+import { RoomSublistV2 } from "./RoomSublistV2.tsx";
 
 interface IProps {
     onKeyDown: (ev: React.KeyboardEvent, state: IRovingTabIndexState) => void;
@@ -615,25 +616,32 @@ export default class RoomList extends React.PureComponent<IProps, IState> {
             ) {
                 forceExpanded = true;
             }
-            // The cost of mounting/unmounting this component offsets the cost
-            // of keeping it in the DOM and hiding it when it is not required
-            return (
-                <RoomSublist
-                    key={`sublist-${orderedTagId}`}
-                    tagId={orderedTagId}
-                    forRooms={true}
-                    startAsHidden={aesthetics.defaultHidden}
-                    label={aesthetics.sectionLabelRaw ? aesthetics.sectionLabelRaw : _t(aesthetics.sectionLabel)}
-                    AuxButtonComponent={aesthetics.AuxButtonComponent}
-                    isMinimized={this.props.isMinimized}
-                    showSkeleton={showSkeleton}
-                    extraTiles={extraTiles}
-                    resizeNotifier={this.props.resizeNotifier}
-                    alwaysVisible={alwaysVisible}
-                    onListCollapse={this.props.onListCollapse}
-                    forceExpanded={forceExpanded}
-                />
-            );
+
+            if(orderedTagId === DefaultTagID.Untagged) return <div key={`sublist-${orderedTagId}`}/>;
+
+            if (orderedTagId !== DefaultTagID.DM) {
+                // The cost of mounting/unmounting this component offsets the cost
+                // of keeping it in the DOM and hiding it when it is not required
+                return (
+                    <RoomSublist
+                        key={`sublist-${orderedTagId}`}
+                        tagId={orderedTagId}
+                        forRooms={true}
+                        startAsHidden={aesthetics.defaultHidden}
+                        label={aesthetics.sectionLabelRaw ? aesthetics.sectionLabelRaw : _t(aesthetics.sectionLabel)}
+                        AuxButtonComponent={aesthetics.AuxButtonComponent}
+                        isMinimized={this.props.isMinimized}
+                        showSkeleton={showSkeleton}
+                        extraTiles={extraTiles}
+                        resizeNotifier={this.props.resizeNotifier}
+                        alwaysVisible={alwaysVisible}
+                        onListCollapse={this.props.onListCollapse}
+                        forceExpanded={forceExpanded}
+                    />
+                );
+            }
+
+            return <RoomSublistV2 key={`sublist-${orderedTagId}`} isMinimized={this.props.isMinimized}/>
         });
     }
 

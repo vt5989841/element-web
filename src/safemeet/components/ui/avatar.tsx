@@ -6,7 +6,7 @@ type ImageProps = React.ImgHTMLAttributes<HTMLImageElement>
 
 export interface AvatarProps extends ChakraAvatar.RootProps {
   name?: string;
-  src?: string;
+  src: string;
   srcSet?: string;
   loading?: ImageProps["loading"];
   icon?: React.ReactElement;
