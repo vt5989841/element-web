@@ -21,30 +21,19 @@ import { RovingAccessibleButton, RovingTabIndexWrapper } from "../../../accessib
 import { Action } from "../../../dispatcher/actions";
 import defaultDispatcher, { MatrixDispatcher } from "../../../dispatcher/dispatcher";
 import { ActionPayload } from "../../../dispatcher/payloads";
-import { ViewRoomPayload } from "../../../dispatcher/payloads/ViewRoomPayload";
 import { getKeyBindingsManager } from "../../../KeyBindingsManager";
 import { _t } from "../../../languageHandler";
-import { ListNotificationState } from "../../../stores/notifications/ListNotificationState";
-import { RoomNotificationStateStore } from "../../../stores/notifications/RoomNotificationStateStore";
-import { ListAlgorithm, SortAlgorithm } from "../../../stores/room-list/algorithms/models";
 import { ListLayout } from "../../../stores/room-list/ListLayout";
-import { DefaultTagID, TagID } from "../../../stores/room-list/models";
+import { TagID } from "../../../stores/room-list/models";
 import RoomListLayoutStore from "../../../stores/room-list/RoomListLayoutStore";
 import RoomListStore, { LISTS_UPDATE_EVENT, LISTS_LOADING_EVENT } from "../../../stores/room-list/RoomListStore";
 import { arrayFastClone, arrayHasOrderChange } from "../../../utils/arrays";
 import { objectExcluding, objectHasDiff } from "../../../utils/objects";
 import ResizeNotifier from "../../../utils/ResizeNotifier";
-import ContextMenu, {
-    ChevronFace,
-    ContextMenuTooltipButton,
-    StyledMenuItemCheckbox,
-    StyledMenuItemRadio,
-} from "../../structures/ContextMenu";
-import AccessibleButton, { ButtonEvent } from "../../views/elements/AccessibleButton";
+import AccessibleButton from "../../views/elements/AccessibleButton";
 import ExtraTile from "./ExtraTile";
 import SettingsStore from "../../../settings/SettingsStore";
 import { SlidingSyncManager } from "../../../SlidingSyncManager";
-import NotificationBadge from "./NotificationBadge";
 import RoomTile from "./RoomTile";
 
 const SHOW_N_BUTTON_HEIGHT = 28; // As defined by CSS
@@ -74,6 +63,7 @@ interface IProps {
     resizeNotifier: ResizeNotifier;
     extraTiles?: ReactComponentElement<typeof ExtraTile>[] | null;
     onListCollapse?: (isExpanded: boolean) => void;
+    alwaysShowPreviews?: boolean
 }
 
 function getLabelId(tagId: TagID): string {
@@ -104,7 +94,6 @@ export default class RoomSublist extends React.Component<IProps, IState> {
     private dispatcherRef?: string;
     private layout: ListLayout;
     private heightAtStart: number;
-    private notificationState: ListNotificationState;
 
     private slidingSyncMode: boolean;
 
@@ -115,7 +104,6 @@ export default class RoomSublist extends React.Component<IProps, IState> {
 
         this.layout = RoomListLayoutStore.instance.getLayoutFor(this.props.tagId);
         this.heightAtStart = 0;
-        this.notificationState = RoomNotificationStateStore.instance.getListState(this.props.tagId);
         this.state = {
             isResizing: false,
             isExpanded: !this.layout.isCollapsed,
@@ -360,13 +348,6 @@ export default class RoomSublist extends React.Component<IProps, IState> {
         }
     };
 
-    private onOpenMenuClick = (ev: ButtonEvent): void => {
-        ev.preventDefault();
-        ev.stopPropagation();
-        const target = ev.target as HTMLButtonElement;
-        this.setState({ contextMenuPosition: target.getBoundingClientRect() });
-    };
-
     private onContextMenu = (ev: React.MouseEvent): void => {
         ev.preventDefault();
         ev.stopPropagation();
@@ -377,54 +358,6 @@ export default class RoomSublist extends React.Component<IProps, IState> {
                 height: 0,
             },
         });
-    };
-
-    private onCloseMenu = (): void => {
-        this.setState({ contextMenuPosition: undefined });
-    };
-
-    private onUnreadFirstChanged = (): void => {
-        const isUnreadFirst = RoomListStore.instance.getListOrder(this.props.tagId) === ListAlgorithm.Importance;
-        const newAlgorithm = isUnreadFirst ? ListAlgorithm.Natural : ListAlgorithm.Importance;
-        RoomListStore.instance.setListOrder(this.props.tagId, newAlgorithm);
-        this.forceUpdate(); // because if the sublist doesn't have any changes then we will miss the list order change
-    };
-
-    private onTagSortChanged = async (sort: SortAlgorithm): Promise<void> => {
-        RoomListStore.instance.setTagSorting(this.props.tagId, sort);
-        this.forceUpdate();
-    };
-
-    private onMessagePreviewChanged = (): void => {
-        this.layout.showPreviews = !this.layout.showPreviews;
-        this.forceUpdate(); // because the layout doesn't trigger a re-render
-    };
-
-    private onBadgeClick = (ev: React.MouseEvent): void => {
-        ev.preventDefault();
-        ev.stopPropagation();
-
-        let room;
-        if (this.props.tagId === DefaultTagID.Invite) {
-            // switch to first room as that'll be the top of the list for the user
-            room = this.state.rooms && this.state.rooms[0];
-        } else {
-            // find the first room with a count of the same colour as the badge count
-            room = RoomListStore.instance.orderedLists[this.props.tagId].find((r: Room) => {
-                const notifState = this.notificationState.getForRoom(r);
-                return notifState.count > 0 && notifState.level === this.notificationState.level;
-            });
-        }
-
-        if (room) {
-            defaultDispatcher.dispatch<ViewRoomPayload>({
-                action: Action.ViewRoom,
-                room_id: room.roomId,
-                show_room_tile: true, // to make sure the room gets scrolled into view
-                metricsTrigger: "WebRoomListNotificationBadge",
-                metricsViaKeyboard: ev.type !== "click",
-            });
-        }
     };
 
     private onHeaderClick = (): void => {
@@ -525,7 +458,7 @@ export default class RoomSublist extends React.Component<IProps, IState> {
                     <RoomTile
                         room={room}
                         key={`room-${room.roomId}`}
-                        showMessagePreview={this.layout.showPreviews}
+                        showMessagePreview={this.props.alwaysShowPreviews || this.layout.showPreviews}
                         isMinimized={this.props.isMinimized}
                         tag={this.props.tagId}
                     />,
@@ -549,113 +482,11 @@ export default class RoomSublist extends React.Component<IProps, IState> {
         return tiles;
     }
 
-    private renderMenu(): ReactNode {
-        if (this.props.tagId === DefaultTagID.Suggested) return null; // not sortable
-
-        let contextMenu: JSX.Element | undefined;
-        if (this.state.contextMenuPosition) {
-            let isAlphabetical = RoomListStore.instance.getTagSorting(this.props.tagId) === SortAlgorithm.Alphabetic;
-            let isUnreadFirst = RoomListStore.instance.getListOrder(this.props.tagId) === ListAlgorithm.Importance;
-            if (this.slidingSyncMode) {
-                const slidingList = SlidingSyncManager.instance.slidingSync?.getListParams(this.props.tagId);
-                isAlphabetical = (slidingList?.sort || [])[0] === "by_name";
-                isUnreadFirst = (slidingList?.sort || [])[0] === "by_notification_level";
-            }
-
-            // Invites don't get some nonsense options, so only add them if we have to.
-            let otherSections: JSX.Element | undefined;
-            if (this.props.tagId !== DefaultTagID.Invite) {
-                otherSections = (
-                    <React.Fragment>
-                        <hr />
-                        <fieldset>
-                            <legend className="mx_RoomSublist_contextMenu_title">{_t("common|appearance")}</legend>
-                            <StyledMenuItemCheckbox
-                                onClose={this.onCloseMenu}
-                                onChange={this.onUnreadFirstChanged}
-                                checked={isUnreadFirst}
-                            >
-                                {_t("room_list|sort_unread_first")}
-                            </StyledMenuItemCheckbox>
-                            <StyledMenuItemCheckbox
-                                onClose={this.onCloseMenu}
-                                onChange={this.onMessagePreviewChanged}
-                                checked={this.layout.showPreviews}
-                            >
-                                {_t("room_list|show_previews")}
-                            </StyledMenuItemCheckbox>
-                        </fieldset>
-                    </React.Fragment>
-                );
-            }
-
-            contextMenu = (
-                <ContextMenu
-                    chevronFace={ChevronFace.None}
-                    left={this.state.contextMenuPosition.left}
-                    top={this.state.contextMenuPosition.top + this.state.contextMenuPosition.height}
-                    onFinished={this.onCloseMenu}
-                >
-                    <div className="mx_RoomSublist_contextMenu">
-                        <fieldset>
-                            <legend className="mx_RoomSublist_contextMenu_title">{_t("room_list|sort_by")}</legend>
-                            <StyledMenuItemRadio
-                                onClose={this.onCloseMenu}
-                                onChange={() => this.onTagSortChanged(SortAlgorithm.Recent)}
-                                checked={!isAlphabetical}
-                                name={`mx_${this.props.tagId}_sortBy`}
-                            >
-                                {_t("room_list|sort_by_activity")}
-                            </StyledMenuItemRadio>
-                            <StyledMenuItemRadio
-                                onClose={this.onCloseMenu}
-                                onChange={() => this.onTagSortChanged(SortAlgorithm.Alphabetic)}
-                                checked={isAlphabetical}
-                                name={`mx_${this.props.tagId}_sortBy`}
-                            >
-                                {_t("room_list|sort_by_alphabet")}
-                            </StyledMenuItemRadio>
-                        </fieldset>
-                        {otherSections}
-                    </div>
-                </ContextMenu>
-            );
-        }
-
-        return (
-            <React.Fragment>
-                <ContextMenuTooltipButton
-                    className="mx_RoomSublist_menuButton"
-                    onClick={this.onOpenMenuClick}
-                    title={_t("room_list|sublist_options")}
-                    isExpanded={!!this.state.contextMenuPosition}
-                />
-                {contextMenu}
-            </React.Fragment>
-        );
-    }
-
     private renderHeader(): React.ReactElement {
         return (
             <RovingTabIndexWrapper inputRef={this.headerButton}>
                 {({ onFocus, isActive, ref }) => {
                     const tabIndex = isActive ? 0 : -1;
-
-                    let ariaLabel = _t("a11y_jump_first_unread_room");
-                    if (this.props.tagId === DefaultTagID.Invite) {
-                        ariaLabel = _t("a11y|jump_first_invite");
-                    }
-
-                    const badge = (
-                        <NotificationBadge
-                            hideIfDot={true}
-                            notification={this.notificationState}
-                            onClick={this.onBadgeClick}
-                            tabIndex={tabIndex}
-                            aria-label={ariaLabel}
-                            showUnsentTooltip={true}
-                        />
-                    );
 
                     let addRoomButton: JSX.Element | undefined;
                     if (this.props.AuxButtonComponent) {
@@ -672,8 +503,6 @@ export default class RoomSublist extends React.Component<IProps, IState> {
                         mx_RoomSublist_headerContainer: true,
                         mx_RoomSublist_headerContainer_withAux: !!addRoomButton,
                     });
-
-                    const badgeContainer = <div className="mx_RoomSublist_badgeContainer">{badge}</div>;
 
                     // Note: the addRoomButton conditionally gets moved around
                     // the DOM depending on whether or not the list is minimized.
@@ -703,15 +532,12 @@ export default class RoomSublist extends React.Component<IProps, IState> {
                                         onContextMenu={this.onContextMenu}
                                         title={this.props.isMinimized ? this.props.label : undefined}
                                     >
-                                        <span className={collapseClasses} />
                                         <span id={getLabelId(this.props.tagId)}>{this.props.label}</span>
+                                        <span className={collapseClasses} />
                                     </AccessibleButton>
-                                    {this.renderMenu()}
-                                    {this.props.isMinimized ? null : badgeContainer}
                                     {this.props.isMinimized ? null : addRoomButton}
                                 </div>
                             </div>
-                            {this.props.isMinimized ? badgeContainer : null}
                             {this.props.isMinimized ? addRoomButton : null}
                         </div>
                     );
@@ -739,7 +565,7 @@ export default class RoomSublist extends React.Component<IProps, IState> {
         let content: JSX.Element | undefined;
         if (this.state.roomsLoading) {
             content = <div className="mx_RoomSublist_skeletonUI" />;
-        } else if (visibleTiles.length > 0 && this.props.forceExpanded) {
+        } else if (visibleTiles.length > 0) {
             content = (
                 <div className="mx_RoomSublist_resizeBox mx_RoomSublist_resizeBox_forceExpanded">
                     <div className="mx_RoomSublist_tiles" ref={this.tilesRef}>

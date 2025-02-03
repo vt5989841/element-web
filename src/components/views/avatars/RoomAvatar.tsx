@@ -51,7 +51,7 @@ export function idNameForRoom(room: Room): string {
 
 export default class RoomAvatar extends React.Component<IProps, IState> {
     public static defaultProps = {
-        size: "36px",
+        size: "40px",
         oobData: {},
     };
 

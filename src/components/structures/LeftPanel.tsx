@@ -401,9 +401,9 @@ export default class LeftPanel extends React.Component<IProps, IState> {
         return (
             <div className={containerClasses}>
                 <div className="mx_LeftPanel_roomListContainer">
+                    <RoomListHeader title="Chats" onVisibilityChange={this.refreshStickyHeaders} />
                     {shouldShowComponent(UIComponent.FilterContainer) && this.renderSearchDialExplore()}
                     {this.renderBreadcrumbs()}
-                    {!this.props.isMinimized && <RoomListHeader onVisibilityChange={this.refreshStickyHeaders} />}
                     <nav className="mx_LeftPanel_roomListWrapper" aria-label={_t("common|rooms")}>
                         <div
                             className={roomListClasses}

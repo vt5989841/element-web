@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { Room } from "matrix-js-sdk/src/models/room";
-import { Box, Text, VStack } from "@chakra-ui/react";
+import { Box, Flex, Text, VStack } from "@chakra-ui/react";
 
 import RoomListStore from "../../../stores/room-list/RoomListStore";
 import { DefaultTagID } from "../../../stores/room-list/models";
@@ -80,8 +80,11 @@ export const RoomSublistV2: React.FC<IProps> = ({ isMinimized }) => {
             flex={1}
             overflow="auto"
             px={2}
+            pt={3}
         >
-            <Text fontSize={15} fontWeight={600} mb={2}>Chats</Text>
+            <Flex pl={1} mb={2}>
+                <Text fontSize={15} fontWeight={600} color="#374957">Chats</Text>
+            </Flex>
             <VStack spaceY={1} align="stretch">
                 {renderRooms()}
             </VStack>

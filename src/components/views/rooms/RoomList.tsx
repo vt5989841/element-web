@@ -617,7 +617,7 @@ export default class RoomList extends React.PureComponent<IProps, IState> {
                 forceExpanded = true;
             }
 
-            if(orderedTagId === DefaultTagID.Untagged) return <div key={`sublist-${orderedTagId}`}/>;
+            if (orderedTagId === DefaultTagID.Untagged) return <div key={`sublist-${orderedTagId}`} />;
 
             if (orderedTagId !== DefaultTagID.DM) {
                 // The cost of mounting/unmounting this component offsets the cost
@@ -637,11 +637,12 @@ export default class RoomList extends React.PureComponent<IProps, IState> {
                         alwaysVisible={alwaysVisible}
                         onListCollapse={this.props.onListCollapse}
                         forceExpanded={forceExpanded}
+                        alwaysShowPreviews={orderedTagId === DefaultTagID.Favourite}
                     />
                 );
             }
 
-            return <RoomSublistV2 key={`sublist-${orderedTagId}`} isMinimized={this.props.isMinimized}/>
+            return <RoomSublistV2 key={`sublist-${orderedTagId}`} isMinimized={this.props.isMinimized} />
         });
     }
 

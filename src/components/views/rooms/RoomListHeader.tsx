@@ -6,7 +6,7 @@ SPDX-License-Identifier: AGPL-3.0-only OR GPL-3.0-only OR LicenseRef-Element-Com
 Please see LICENSE files in the repository root for full details.
 */
 
-import { EventType, RoomType, Room, RoomEvent, ClientEvent } from "matrix-js-sdk/src/matrix";
+import { EventType, RoomType, Room, ClientEvent } from "matrix-js-sdk/src/matrix";
 import React, { useContext, useEffect, useState } from "react";
 import { Tooltip } from "@vector-im/compound-web";
 
@@ -16,16 +16,13 @@ import { Action } from "../../../dispatcher/actions";
 import defaultDispatcher from "../../../dispatcher/dispatcher";
 import { ViewRoomPayload } from "../../../dispatcher/payloads/ViewRoomPayload";
 import { useDispatcher } from "../../../hooks/useDispatcher";
-import { useEventEmitterState, useTypedEventEmitter, useTypedEventEmitterState } from "../../../hooks/useEventEmitter";
+import { useEventEmitterState, useTypedEventEmitter } from "../../../hooks/useEventEmitter";
 import { useFeatureEnabled } from "../../../hooks/useSettings";
 import { _t } from "../../../languageHandler";
 import PosthogTrackers from "../../../PosthogTrackers";
 import { UIComponent } from "../../../settings/UIFeature";
 import {
-    getMetaSpaceName,
-    MetaSpace,
     SpaceKey,
-    UPDATE_HOME_BEHAVIOUR,
     UPDATE_SELECTED_SPACE,
 } from "../../../stores/spaces";
 import SpaceStore from "../../../stores/spaces/SpaceStore";
@@ -41,16 +38,13 @@ import {
     ContextMenuTooltipButton,
     useContextMenu,
     MenuProps,
-    ContextMenuButton,
 } from "../../structures/ContextMenu";
 import { BetaPill } from "../beta/BetaCard";
 import IconizedContextMenu, {
     IconizedContextMenuOption,
     IconizedContextMenuOptionList,
 } from "../context_menus/IconizedContextMenu";
-import SpaceContextMenu from "../context_menus/SpaceContextMenu";
 import InlineSpinner from "../elements/InlineSpinner";
-import { HomeButtonContextMenu } from "../spaces/SpacePanel";
 
 const contextMenuBelow = (elementRect: DOMRect): MenuProps => {
     // align the context menu's icons with the icon which opened the context menu
@@ -106,34 +100,20 @@ const usePendingActions = (): Map<PendingActionType, Set<string>> => {
 
 interface IProps {
     onVisibilityChange?(): void;
+    title?: string;
 }
 
-const RoomListHeader: React.FC<IProps> = ({ onVisibilityChange }) => {
+const RoomListHeader: React.FC<IProps> = ({ title = "Chats", onVisibilityChange }) => {
     const cli = useContext(MatrixClientContext);
-    const [mainMenuDisplayed, mainMenuHandle, openMainMenu, closeMainMenu] = useContextMenu<HTMLDivElement>();
     const [plusMenuDisplayed, plusMenuHandle, openPlusMenu, closePlusMenu] = useContextMenu<HTMLDivElement>();
-    const [spaceKey, activeSpace] = useEventEmitterState<[SpaceKey, Room | null]>(
+    const [, activeSpace] = useEventEmitterState<[SpaceKey, Room | null]>(
         SpaceStore.instance,
         UPDATE_SELECTED_SPACE,
         () => [SpaceStore.instance.activeSpace, SpaceStore.instance.activeSpaceRoom],
     );
-    const allRoomsInHome = useEventEmitterState(SpaceStore.instance, UPDATE_HOME_BEHAVIOUR, () => {
-        return SpaceStore.instance.allRoomsInHome;
-    });
     const videoRoomsEnabled = useFeatureEnabled("feature_video_rooms");
     const elementCallVideoRoomsEnabled = useFeatureEnabled("feature_element_call_video_rooms");
     const pendingActions = usePendingActions();
-
-    const canShowMainMenu = activeSpace || spaceKey === MetaSpace.Home;
-
-    useEffect(() => {
-        if (mainMenuDisplayed && !canShowMainMenu) {
-            // Space changed under us and we no longer has a main menu to draw
-            closeMainMenu();
-        }
-    }, [closeMainMenu, canShowMainMenu, mainMenuDisplayed]);
-
-    const spaceName = useTypedEventEmitterState(activeSpace ?? undefined, RoomEvent.Name, () => activeSpace?.name);
 
     useEffect(() => {
         onVisibilityChange?.();
@@ -156,23 +136,7 @@ const RoomListHeader: React.FC<IProps> = ({ onVisibilityChange }) => {
     const canShowPlusMenu = canCreateRooms || canExploreRooms || canCreateSpaces || activeSpace;
 
     let contextMenu: JSX.Element | undefined;
-    if (mainMenuDisplayed && mainMenuHandle.current) {
-        let ContextMenuComponent;
-        if (activeSpace) {
-            ContextMenuComponent = SpaceContextMenu;
-        } else {
-            ContextMenuComponent = HomeButtonContextMenu;
-        }
-
-        contextMenu = (
-            <ContextMenuComponent
-                {...contextMenuBelow(mainMenuHandle.current.getBoundingClientRect())}
-                space={activeSpace!}
-                onFinished={closeMainMenu}
-                hideHeader={true}
-            />
-        );
-    } else if (plusMenuDisplayed && activeSpace) {
+    if (plusMenuDisplayed && activeSpace) {
         let inviteOption: JSX.Element | undefined;
         if (shouldShowSpaceInvite(activeSpace)) {
             inviteOption = (
@@ -359,13 +323,6 @@ const RoomListHeader: React.FC<IProps> = ({ onVisibilityChange }) => {
         );
     }
 
-    let title: string;
-    if (activeSpace && spaceName) {
-        title = spaceName;
-    } else {
-        title = getMetaSpaceName(spaceKey as MetaSpace, allRoomsInHome);
-    }
-
     const pendingActionSummary = [...pendingActions.entries()]
         .filter(([type, keys]) => keys.size > 0)
         .map(([type, keys]) => {
@@ -379,26 +336,6 @@ const RoomListHeader: React.FC<IProps> = ({ onVisibilityChange }) => {
         .join("\n");
 
     let contextMenuButton: JSX.Element = <div className="mx_RoomListHeader_contextLessTitle">{title}</div>;
-    if (canShowMainMenu) {
-        const commonProps = {
-            ref: mainMenuHandle,
-            onClick: openMainMenu,
-            isExpanded: mainMenuDisplayed,
-            className: "mx_RoomListHeader_contextMenuButton",
-            children: title,
-        };
-
-        if (!!activeSpace) {
-            contextMenuButton = (
-                <ContextMenuButton
-                    {...commonProps}
-                    label={_t("room_list|space_menu_label", { spaceName: spaceName ?? activeSpace.name })}
-                />
-            );
-        } else {
-            contextMenuButton = <ContextMenuTooltipButton {...commonProps} title={_t("room_list|home_menu_label")} />;
-        }
-    }
 
     return (
         <aside className="mx_RoomListHeader" aria-label={_t("room|context_menu|title")}>
