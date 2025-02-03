@@ -29,6 +29,7 @@ import { ModuleRunner } from "../modules/ModuleRunner";
 import { parseQs } from "./url_utils";
 import { getInitialScreenAfterLogin, getScreenFromLocation, init as initRouting, onNewScreen } from "./routing";
 import { UserFriendlyError } from "../languageHandler";
+import { Provider } from "@safemeet/components/ui/provider";
 
 // add React and ReactPerf to the global namespace, to make them easier to access via the console
 // this incidentally means we can forget our React imports in JSX files without penalty.
@@ -111,17 +112,19 @@ export async function loadApp(fragParams: {}, matrixChatRef: React.Ref<MatrixCha
     return (
         <wrapperOpts.Wrapper>
             <StrictMode>
-                <MatrixChat
-                    ref={matrixChatRef}
-                    onNewScreen={onNewScreen}
-                    config={config}
-                    realQueryParams={params}
-                    startingFragmentQueryParams={fragParams}
-                    enableGuest={!config.disable_guests}
-                    onTokenLoginCompleted={onTokenLoginCompleted}
-                    initialScreenAfterLogin={initialScreenAfterLogin}
-                    defaultDeviceDisplayName={defaultDeviceName}
-                />
+                <Provider>
+                    <MatrixChat
+                        ref={matrixChatRef}
+                        onNewScreen={onNewScreen}
+                        config={config}
+                        realQueryParams={params}
+                        startingFragmentQueryParams={fragParams}
+                        enableGuest={!config.disable_guests}
+                        onTokenLoginCompleted={onTokenLoginCompleted}
+                        initialScreenAfterLogin={initialScreenAfterLogin}
+                        defaultDeviceDisplayName={defaultDeviceName}
+                    />
+                </Provider>
             </StrictMode>
         </wrapperOpts.Wrapper>
     );
@@ -161,7 +164,7 @@ async function verifyServerConfig(): Promise<IConfigOptions> {
             logger.log("Config uses a default_hs_url - constructing a default_server_config using this information");
             logger.warn(
                 "DEPRECATED CONFIG OPTION: In the future, default_hs_url will not be accepted. Please use " +
-                    "default_server_config instead.",
+                "default_server_config instead.",
             );
 
             wkConfig = {
@@ -186,7 +189,7 @@ async function verifyServerConfig(): Promise<IConfigOptions> {
             logger.log("Config uses a default_server_name - doing .well-known lookup");
             logger.warn(
                 "DEPRECATED CONFIG OPTION: In the future, default_server_name will not be accepted. Please " +
-                    "use default_server_config instead.",
+                "use default_server_config instead.",
             );
             discoveryResult = await AutoDiscovery.findClientConfig(serverName);
             if (discoveryResult["m.homeserver"].base_url === null && wkConfig) {

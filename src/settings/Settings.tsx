@@ -1167,7 +1167,7 @@ export const SETTINGS: Settings = {
         displayName: _td("settings|all_rooms_home"),
         description: _td("settings|all_rooms_home_description"),
         supportedLevels: LEVELS_ACCOUNT_SETTINGS,
-        default: false,
+        default: true,
     },
     "Spaces.enabledMetaSpaces": {
         supportedLevels: LEVELS_ACCOUNT_SETTINGS,

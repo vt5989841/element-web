@@ -195,6 +195,9 @@ module.exports = (env, argv) => {
             // We need to specify that TS can be resolved without an extension
             extensions: [".js", ".json", ".ts", ".tsx"],
             alias: {
+                "@safemeet": path.resolve(__dirname, "src/safemeet"),
+                "@components": path.resolve(__dirname, "src/components"),
+                "@src": path.resolve(__dirname, "src"),
                 // alias any requires to the react module to the one in our path,
                 // otherwise we tend to get the react source included twice when
                 // using `npm link` / `yarn link`.
