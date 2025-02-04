@@ -48,6 +48,7 @@ Please see LICENSE files in the repository root for full details.
         justify-content: center;
 
         .mx_RoomTile_subtitle {
+            width: 100%;
             align-items: center;
             color: $secondary-content;
             display: flex;
@@ -92,7 +93,7 @@ Please see LICENSE files in the repository root for full details.
         align-items: center;
 
         .mx_NotificationBadge {
-            margin-right: 2px; /* centering */
+            margin-right: 0px; /* centering */
         }
 
         .mx_NotificationBadge_dot {
@@ -140,6 +141,12 @@ Please see LICENSE files in the repository root for full details.
         &:hover,
         &:focus-within,
         &.mx_RoomTile_hasMenuOpen {
+            .mx_RoomTile_time {
+                visibility: hidden;
+                width: 4px;
+                overflow: hidden;
+            }
+
             /* Hide the badge container on hover because it'll be a menu button */
             .mx_RoomTile_badgeContainer {
                 width: 0;

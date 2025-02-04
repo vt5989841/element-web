@@ -44,6 +44,7 @@ import { shouldShowComponent } from "../../../customisations/helpers/UIComponent
 import { UIComponent } from "../../../settings/UIFeature";
 import { isKnockDenied } from "../../../utils/membership";
 import SettingsStore from "../../../settings/SettingsStore";
+import { Box, Flex, Text } from "@chakra-ui/react";
 
 interface Props {
     room: Room;
@@ -70,6 +71,34 @@ export const contextMenuBelow = (elementRect: PartialDOMRect): MenuProps => {
     const top = elementRect.bottom + window.scrollY + 17;
     const chevronFace = ChevronFace.None;
     return { left, top, chevronFace };
+};
+
+const formatMessageTime = (timestamp: number): string => {
+    const date = new Date(timestamp);
+    const now = new Date();
+
+    // Nếu là ngày hôm nay, chỉ hiển thị giờ
+    if (date.toDateString() === now.toDateString()) {
+        return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    }
+
+    // Nếu là tuần này, hiển thị tên ngày
+    const weekDiff = Math.round((now.getTime() - date.getTime()) / (1000 * 60 * 60 * 24));
+    if (weekDiff < 7) {
+        return date.toLocaleDateString([], { weekday: 'short' });
+    }
+
+    // Nếu là năm nay, hiển thị ngày và tháng
+    if (date.getFullYear() === now.getFullYear()) {
+        return date.toLocaleDateString([], { month: 'short', day: 'numeric' });
+    }
+
+    // Nếu là năm trước, hiển thị ngày/tháng/năm
+    return date.toLocaleDateString([], {
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric'
+    });
 };
 
 class RoomTile extends React.PureComponent<Props, State> {
@@ -300,7 +329,7 @@ class RoomTile extends React.PureComponent<Props, State> {
 
             // Only show the icon by default if the room is overridden to muted.
             // TODO: [FTUE Notifications] Probably need to detect global mute state
-            mx_RoomTile_notificationsButton_show: state === RoomNotifState.Mute,
+            //mx_RoomTile_notificationsButton_show: state === RoomNotifState.Mute,
         });
 
         return (
@@ -412,12 +441,26 @@ class RoomTile extends React.PureComponent<Props, State> {
         });
 
         const titleContainer = this.props.isMinimized ? null : (
-            <div className="mx_RoomTile_titleContainer">
-                <div title={name} className={titleClasses} tabIndex={-1}>
-                    <span dir="auto">{name}</span>
-                </div>
-                {subtitle}
-            </div>
+            <Box className="mx_RoomTile_titleContainer" w="100%">
+                <Flex justify="space-between" align="center" width="100%">
+                    <div title={name} className={titleClasses} tabIndex={-1}>
+                        <span dir="auto">{name}</span>
+                    </div>
+                    {this.state.messagePreview && (
+                        <Box className="mx_RoomTile_time" h="18px" flexShrink={0} ml={2}>
+                            <Text
+                                fontSize="xs"
+                                color="gray.500">
+                                {formatMessageTime(this.state.messagePreview.event.getTs())}
+                            </Text>
+                        </Box>
+                    )}
+                </Flex>
+                <Flex align="flex-start">
+                    {subtitle}
+                    {badge}
+                </Flex>
+            </Box>
         );
 
         let ariaLabel = name;
@@ -469,7 +512,6 @@ class RoomTile extends React.PureComponent<Props, State> {
                                 tooltipProps={{ tabIndex: isActive ? 0 : -1 }}
                             />
                             {titleContainer}
-                            {badge}
                             {this.renderGeneralMenu()}
                             {this.renderNotificationsMenu(isActive)}
                         </AccessibleButton>

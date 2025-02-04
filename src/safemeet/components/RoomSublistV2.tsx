@@ -2,10 +2,10 @@ import React, { useEffect, useState } from "react";
 import { Room } from "matrix-js-sdk/src/models/room";
 import { Box, Flex, Text, VStack } from "@chakra-ui/react";
 
-import RoomListStore from "../../../stores/room-list/RoomListStore";
-import { DefaultTagID } from "../../../stores/room-list/models";
-import RoomTile from "./RoomTile";
-import { LISTS_UPDATE_EVENT } from "../../../stores/room-list/RoomListStore";
+import RoomListStore from "../../stores/room-list/RoomListStore";
+import { DefaultTagID } from "../../stores/room-list/models";
+import RoomTile from "../../components/views/rooms/RoomTile";
+import { LISTS_UPDATE_EVENT } from "../../stores/room-list/RoomListStore";
 
 interface IProps {
     isMinimized: boolean;
@@ -85,9 +85,9 @@ export const RoomSublistV2: React.FC<IProps> = ({ isMinimized }) => {
             <Flex pl={1} mb={2}>
                 <Text fontSize={15} fontWeight={600} color="#374957">Chats</Text>
             </Flex>
-            <VStack spaceY={1} align="stretch">
+            <Flex direction="column" gap={0} align="stretch" w="100%">
                 {renderRooms()}
-            </VStack>
+            </Flex>
         </Box>
     );
 };

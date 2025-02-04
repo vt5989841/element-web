@@ -57,7 +57,7 @@ import { getKeyBindingsManager } from "../../../KeyBindingsManager";
 import AccessibleButton from "../elements/AccessibleButton";
 import { Landmark, LandmarkNavigation } from "../../../accessibility/LandmarkNavigation";
 import LegacyCallHandler, { LegacyCallHandlerEvent } from "../../../LegacyCallHandler.tsx";
-import { RoomSublistV2 } from "./RoomSublistV2.tsx";
+import { RoomSublistV2 } from "../../../safemeet/components/RoomSublistV2.tsx";
 
 interface IProps {
     onKeyDown: (ev: React.KeyboardEvent, state: IRovingTabIndexState) => void;
