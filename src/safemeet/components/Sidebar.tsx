@@ -1,4 +1,4 @@
-import { Button, Flex, Text, useRecipe, VStack } from "@chakra-ui/react";
+import { Button, Flex, useRecipe } from "@chakra-ui/react";
 import React, { useEffect } from "react";
 import { HomeIcon } from "./icons/HomeIcon";
 import { ChatIcon } from "./icons/ChatIcon";
@@ -10,6 +10,7 @@ import { SettingIcon } from "./icons/SettingIcon";
 import UserMenu from "@components/structures/UserMenu";
 import { useTheme } from "@src/hooks/useTheme";
 import { useGlobalStore } from '../stores/useGlobalStore';
+import { Tooltip } from "./ui/tooltip";
 
 type TabType = "home" | "chats" | "meets" | "calls" | "files";
 
@@ -43,33 +44,34 @@ export const Sidebar = (props: { className?: string; isCollapsed?: boolean; }) =
             <Flex direction="column" alignItems="center" gap={4}>
                 <SidebarItem
                     icon={<HomeIcon />}
-                    text="Home"
+                    label="Home"
                     isActive={activeTab === "home"}
                     onClick={() => handleTabClick("home")} />
                 <SidebarItem
                     icon={<MeetIcon />}
-                    text="Meets"
+                    label="Meets"
                     isActive={activeTab === "meets"}
                     onClick={() => handleTabClick("meets")} />
                 <SidebarItem
                     icon={<ChatIcon />}
-                    text="Chats"
+                    label="Chats"
                     isActive={activeTab === "chats"}
                     onClick={() => handleTabClick("chats")} />
                 <SidebarItem
                     icon={<CallIcon />}
-                    text="Calls"
+                    label="Calls"
                     isActive={activeTab === "calls"}
                     onClick={() => handleTabClick("calls")} />
                 <SidebarItem
                     icon={<FolderIcon />}
-                    text="My Files"
+                    label="My Files"
                     isActive={activeTab === "files"}
                     onClick={() => handleTabClick("files")} />
             </Flex>
             <Flex direction="column" p={2} alignItems="center" justifyContent="center" gap={4}>
                 <SidebarItem
-                    icon={<SettingIcon />} />
+                    icon={<SettingIcon />}
+                    label="Settings" />
                 <UserMenu isPanelCollapsed />
             </Flex>
         </Flex>
@@ -78,43 +80,44 @@ export const Sidebar = (props: { className?: string; isCollapsed?: boolean; }) =
 
 interface SidebarItemProps {
     icon: React.ReactNode;
-    text?: string;
-    color?: string;
+    label: string;
     isActive?: boolean;
     onClick?: () => void;
 }
 
 const SidebarItem = ({ 
     icon, 
-    text, 
-    color = "text.primary",
+    label,
     isActive,
     onClick 
 }: SidebarItemProps) => {
-    const hasText = !!text;
-
     const recipe = useRecipe({ key: "button" });
     const styles = recipe({
         variant: "ghost",
-        size: hasText ? "50x50" as any : "32x32"
+        size: "32x32" as any  // giờ chỉ cần một size vì không còn hiển thị text
     });
 
     return (
-        <Button
-            css={styles}
-            color={color}
-            aria-label={text || ""}
-            colorPalette="brand"
-            onClick={onClick}
-            bg={isActive ? "bg.subtle" : "transparent"}
-            _hover={{
-                bg: "bg.subtle"
+        <Tooltip
+            content={label}
+            hasArrow
+            openDelay={300}
+            gutter={8}
+            positioning={{
+                placement: "right"
             }}
         >
-            <VStack gap="2px">
+            <Button
+                css={styles}
+                aria-label={label}
+                onClick={onClick}
+                bg={isActive ? "bg.subtle" : "transparent"}
+                _hover={{
+                    bg: "bg.subtle"
+                }}
+            >
                 {icon}
-                {text && <Text fontSize="xs">{text}</Text>}
-            </VStack>
-        </Button>
+            </Button>
+        </Tooltip>
     );
 };
