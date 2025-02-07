@@ -156,7 +156,8 @@
         "temporal-polyfill": "^0.2.5",
         "ua-parser-js": "^1.0.2",
         "uuid": "^11.0.0",
-        "what-input": "^5.2.10"
+        "what-input": "^5.2.10",
+        "zustand": "^5.0.3"
     },
     "devDependencies": {
         "@action-validator/cli": "^0.6.0",

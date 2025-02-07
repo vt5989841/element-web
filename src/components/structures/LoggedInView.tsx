@@ -43,7 +43,7 @@ import Modal from "../../Modal";
 import { CollapseItem, ICollapseConfig } from "../../resizer/distributors/collapse";
 import { getKeyBindingsManager } from "../../KeyBindingsManager";
 import { IOpts } from "../../createRoom";
-import SpacePanelNew from "@safemeet/components/SpacePanelNew";
+import SpacePanelV2 from "@safemeet/components/SpacePanelV2";
 import LegacyCallHandler, { LegacyCallHandlerEvent } from "../../LegacyCallHandler";
 import AudioFeedArrayForLegacyCall from "../views/voip/AudioFeedArrayForLegacyCall";
 import { OwnProfileStore } from "../../stores/OwnProfileStore";
@@ -717,7 +717,7 @@ class LoggedInView extends React.Component<IProps, IState> {
                             <LeftPanelLiveShareWarning isMinimized={this.props.collapseLhs || false} />
                             <div className="mx_LeftPanel_wrapper">
                                 <BackdropPanel blurMultiplier={0.5} backgroundImage={this.state.backgroundImage} />
-                                <SpacePanelNew />
+                                <SpacePanelV2 />
                                 <BackdropPanel backgroundImage={this.state.backgroundImage} />
                                 <div
                                     className="mx_LeftPanel_wrapper--user"

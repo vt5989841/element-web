@@ -1,38 +1,73 @@
-import { Button, Flex, Text, VStack, type FlexProps } from "@chakra-ui/react";
-import React from "react";
+import { Button, Flex, Text, useRecipe, VStack } from "@chakra-ui/react";
+import React, { useEffect } from "react";
 import { HomeIcon } from "./icons/HomeIcon";
 import { ChatIcon } from "./icons/ChatIcon";
 import { MeetIcon } from "./icons/MeetIcon";
 import { CallIcon } from "./icons/CallIcon";
 import { FolderIcon } from "./icons/FolderIcon";
-import { ColorModeButton } from "./ui/color-mode";
+import { useColorMode } from "./ui/color-mode";
 import { SettingIcon } from "./icons/SettingIcon";
 import UserMenu from "@components/structures/UserMenu";
+import { useTheme } from "@src/hooks/useTheme";
+import { useGlobalStore } from '../stores/useGlobalStore';
 
-export const Sidebar = (props: { className?: string; css?: FlexProps["css"] }) => {
-    const { className, css } = props;
+type TabType = "home" | "chats" | "meets" | "calls" | "files";
+
+export const Sidebar = (props: { className?: string; isCollapsed?: boolean; }) => {
+    const { className, isCollapsed } = props;
+    
+    const activeTab = useGlobalStore((state) => state.sidebar.activeTab);
+    const setSidebarTab = useGlobalStore((state) => state.setSidebarTab);
+
+    const elementTheme = useTheme();
+    const { setColorMode } = useColorMode();
+    const recipe = useRecipe({ key: "sidebar" });
+    const styles = recipe({ isCollapsed });
+
+    // Sync Element Web theme with Chakra UI
+    useEffect(() => {
+        // Element Web theme names typically include "light" or "dark"
+        const isElementDarkTheme = elementTheme.theme.includes("dark");
+        setColorMode(isElementDarkTheme ? "dark" : "light");
+    }, [elementTheme.theme, setColorMode]);
+
+    const handleTabClick = (tab: TabType) => {
+        setSidebarTab(tab);
+    };
 
     return (
-        <Flex className={className} direction="column" css={css} alignItems="center" justifyContent="space-between">
+        <Flex
+            className={className}
+            css={styles}
+            colorPalette="brand">
             <Flex direction="column" alignItems="center" gap={4}>
                 <SidebarItem
                     icon={<HomeIcon />}
-                    text="Home" />
+                    text="Home"
+                    isActive={activeTab === "home"}
+                    onClick={() => handleTabClick("home")} />
                 <SidebarItem
                     icon={<MeetIcon />}
-                    text="Meets" />
+                    text="Meets"
+                    isActive={activeTab === "meets"}
+                    onClick={() => handleTabClick("meets")} />
                 <SidebarItem
                     icon={<ChatIcon />}
-                    text="Chats" />
+                    text="Chats"
+                    isActive={activeTab === "chats"}
+                    onClick={() => handleTabClick("chats")} />
                 <SidebarItem
                     icon={<CallIcon />}
-                    text="Calls" />
+                    text="Calls"
+                    isActive={activeTab === "calls"}
+                    onClick={() => handleTabClick("calls")} />
                 <SidebarItem
                     icon={<FolderIcon />}
-                    text="My Files" />
+                    text="My Files"
+                    isActive={activeTab === "files"}
+                    onClick={() => handleTabClick("files")} />
             </Flex>
-            <Flex direction="column" p={2} alignItems="center" justifyContent="center">
-                <ColorModeButton />
+            <Flex direction="column" p={2} alignItems="center" justifyContent="center" gap={4}>
                 <SidebarItem
                     icon={<SettingIcon />} />
                 <UserMenu isPanelCollapsed />
@@ -41,14 +76,44 @@ export const Sidebar = (props: { className?: string; css?: FlexProps["css"] }) =
     );
 };
 
-const SidebarItem = (props: { icon: React.ReactNode, text?: string }) => {
-    const { icon, text } = props;
+interface SidebarItemProps {
+    icon: React.ReactNode;
+    text?: string;
+    color?: string;
+    isActive?: boolean;
+    onClick?: () => void;
+}
+
+const SidebarItem = ({ 
+    icon, 
+    text, 
+    color = "text.primary",
+    isActive,
+    onClick 
+}: SidebarItemProps) => {
+    const hasText = !!text;
+
+    const recipe = useRecipe({ key: "button" });
+    const styles = recipe({
+        variant: "ghost",
+        size: hasText ? "50x50" as any : "32x32"
+    });
 
     return (
-        <Button w={12} h={12} p={1} _icon={{ w: 5, h: 5 }}>
-            <VStack>
+        <Button
+            css={styles}
+            color={color}
+            aria-label={text || ""}
+            colorPalette="brand"
+            onClick={onClick}
+            bg={isActive ? "bg.subtle" : "transparent"}
+            _hover={{
+                bg: "bg.subtle"
+            }}
+        >
+            <VStack gap="2px">
                 {icon}
-                <Text fontSize="xs">{text}</Text>
+                {text && <Text fontSize="xs">{text}</Text>}
             </VStack>
         </Button>
     );

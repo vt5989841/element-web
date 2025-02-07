@@ -19,13 +19,6 @@ import IconizedContextMenu, {
 import SettingsStore from "@src/settings/SettingsStore";
 import { SettingLevel } from "@src/settings/SettingLevel";
 import { useSettingValue } from "@src/hooks/useSettings";
-import UserMenu from "@components/structures/UserMenu";
-import { Flex, IconButton, Spacer } from '@chakra-ui/react';
-import { ChatIcon } from "./icons/ChatIcon";
-import { MeetIcon } from "./icons/MeetIcon";
-import { FolderIcon } from "./icons/FolderIcon";
-import { HomeIcon } from "./icons/HomeIcon";
-import { ColorModeButton } from "./ui/color-mode";
 import { Sidebar } from "./Sidebar";
 
 export const HomeButtonContextMenu: React.FC<ComponentProps<typeof SpaceContextMenu>> = ({
@@ -53,33 +46,8 @@ export const HomeButtonContextMenu: React.FC<ComponentProps<typeof SpaceContextM
     );
 };
 
-const SpacePanelNew = () => {
-    return <Sidebar css={{ height: "100%", pt: 14 }} />;
-
-    return (
-        <Flex flexDirection="column" gap={4} height="100%" w={20}>
-            <Flex flexDirection="column" gap={2} alignItems="center" justifyContent="center">
-                <IconButton><HomeIcon /></IconButton>
-                <IconButton><ChatIcon /></IconButton>
-                <IconButton><MeetIcon /></IconButton>
-                <IconButton><FolderIcon /></IconButton>
-            </Flex>
-            <Spacer />
-            <Flex flexDirection="column" gap={2} p={2} alignItems="center" justifyContent="center">
-                <ColorModeButton />
-                <MoreItemsIcon />
-                <UserMenu isPanelCollapsed />
-            </Flex>
-        </Flex>
-    );
+const SpacePanelV2 = () => {
+    return <Sidebar />;
 };
 
-export default SpacePanelNew;
-
-const MoreItemsIcon = () => {
-    return (
-        <svg width="25" height="24" viewBox="0 0 25 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M5.75 18H20.75M5 12H20.75M13.25 6H20.75" stroke="black" stroke-width="1.875" stroke-linecap="round" stroke-linejoin="round" />
-        </svg>
-    );
-};
+export default SpacePanelV2;

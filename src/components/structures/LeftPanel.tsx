@@ -36,6 +36,8 @@ import AccessibleButton, { ButtonEvent } from "../views/elements/AccessibleButto
 import PosthogTrackers from "../../PosthogTrackers";
 import PageType from "../../PageTypes";
 import { Landmark, LandmarkNavigation } from "../../accessibility/LandmarkNavigation";
+import { SidebarItemType, useGlobalStore } from "@safemeet/stores/useGlobalStore";
+import { CallList } from "@safemeet/components/CallList";
 
 interface IProps {
     isMinimized: boolean;
@@ -52,6 +54,7 @@ interface IState {
     showBreadcrumbs: BreadcrumbsMode;
     activeSpace: SpaceKey;
     supportsPstnProtocol: boolean;
+    activeSidebarItem: SidebarItemType
 }
 
 export default class LeftPanel extends React.Component<IProps, IState> {
@@ -59,6 +62,7 @@ export default class LeftPanel extends React.Component<IProps, IState> {
     private roomListRef = createRef<RoomList>();
     private focusedElement: Element | null = null;
     private isDoingStickyHeaders = false;
+    private activeSidebarItemUnsubscribe = () => { };
 
     public constructor(props: IProps) {
         super(props);
@@ -67,6 +71,7 @@ export default class LeftPanel extends React.Component<IProps, IState> {
             activeSpace: SpaceStore.instance.activeSpace,
             showBreadcrumbs: LeftPanel.breadcrumbsMode,
             supportsPstnProtocol: LegacyCallHandler.instance.getSupportsPstnProtocol(),
+            activeSidebarItem: useGlobalStore.getState().sidebar.activeTab,
         };
     }
 
@@ -87,6 +92,10 @@ export default class LeftPanel extends React.Component<IProps, IState> {
             this.listContainerRef.current.addEventListener("scroll", this.onScroll, { passive: true });
         }
         UIStore.instance.on("ListContainer", this.refreshStickyHeaders);
+
+        this.activeSidebarItemUnsubscribe = useGlobalStore.subscribe((state) => {
+            this.setState({ activeSidebarItem: state.sidebar.activeTab });
+        });
     }
 
     public componentWillUnmount(): void {
@@ -97,6 +106,7 @@ export default class LeftPanel extends React.Component<IProps, IState> {
         UIStore.instance.stopTrackingElementDimensions("ListContainer");
         UIStore.instance.removeListener("ListContainer", this.refreshStickyHeaders);
         this.listContainerRef.current?.removeEventListener("scroll", this.onScroll);
+        if (this.activeSidebarItemUnsubscribe) this.activeSidebarItemUnsubscribe();
     }
 
     public componentDidUpdate(prevProps: IProps, prevState: IState): void {
@@ -377,19 +387,7 @@ export default class LeftPanel extends React.Component<IProps, IState> {
     }
 
     public render(): React.ReactNode {
-        const roomList = (
-            <RoomList
-                onKeyDown={this.onKeyDown}
-                resizeNotifier={this.props.resizeNotifier}
-                onFocus={this.onFocus}
-                onBlur={this.onBlur}
-                isMinimized={this.props.isMinimized}
-                activeSpace={this.state.activeSpace}
-                onResize={this.refreshStickyHeaders}
-                onListCollapse={this.refreshStickyHeaders}
-                ref={this.roomListRef}
-            />
-        );
+        const activeSidebarItem = this.state.activeSidebarItem;
 
         const containerClasses = classNames({
             mx_LeftPanel: true,
@@ -404,17 +402,32 @@ export default class LeftPanel extends React.Component<IProps, IState> {
                     <RoomListHeader title="Chats" onVisibilityChange={this.refreshStickyHeaders} />
                     {shouldShowComponent(UIComponent.FilterContainer) && this.renderSearchDialExplore()}
                     {this.renderBreadcrumbs()}
-                    <nav className="mx_LeftPanel_roomListWrapper" aria-label={_t("common|rooms")}>
-                        <div
-                            className={roomListClasses}
-                            ref={this.listContainerRef}
-                            // Firefox sometimes makes this element focusable due to
-                            // overflow:scroll;, so force it out of tab order.
-                            tabIndex={-1}
-                        >
-                            {roomList}
-                        </div>
-                    </nav>
+                    {activeSidebarItem === "calls" && (
+                        <CallList isMinimized={this.props.isMinimized} />
+                    )}
+                    {activeSidebarItem !== "calls" && (
+                        <nav className="mx_LeftPanel_roomListWrapper" aria-label={_t("common|rooms")}>
+                            <div
+                                className={roomListClasses}
+                                ref={this.listContainerRef}
+                                // Firefox sometimes makes this element focusable due to
+                                // overflow:scroll;, so force it out of tab order.
+                                tabIndex={-1}
+                            >
+                                <RoomList
+                                    onKeyDown={this.onKeyDown}
+                                    resizeNotifier={this.props.resizeNotifier}
+                                    onFocus={this.onFocus}
+                                    onBlur={this.onBlur}
+                                    isMinimized={this.props.isMinimized}
+                                    activeSpace={this.state.activeSpace}
+                                    onResize={this.refreshStickyHeaders}
+                                    onListCollapse={this.refreshStickyHeaders}
+                                    ref={this.roomListRef}
+                                />
+                            </div>
+                        </nav>
+                    )}
                 </div>
             </div>
         );
