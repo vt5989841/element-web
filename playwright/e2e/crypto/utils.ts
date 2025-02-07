@@ -6,7 +6,7 @@ SPDX-License-Identifier: AGPL-3.0-only OR GPL-3.0-only OR LicenseRef-Element-Com
 Please see LICENSE files in the repository root for full details.
 */
 
-import { expect, JSHandle, type Page } from "@playwright/test";
+import { expect, type JSHandle, type Page } from "@playwright/test";
 
 import type { ICreateRoomOpts, MatrixClient } from "matrix-js-sdk/src/matrix";
 import type {
@@ -18,9 +18,9 @@ import type {
     Verifier,
     VerifierEvent,
 } from "matrix-js-sdk/src/crypto-api";
-import { Credentials, HomeserverInstance } from "../../plugins/homeserver";
-import { Client } from "../../pages/client";
-import { ElementAppPage } from "../../pages/ElementAppPage";
+import { type Credentials, type HomeserverInstance } from "../../plugins/homeserver";
+import { type Client } from "../../pages/client";
+import { type ElementAppPage } from "../../pages/ElementAppPage";
 import { Bot } from "../../pages/bot";
 
 /**
@@ -28,11 +28,13 @@ import { Bot } from "../../pages/bot";
  * @param page - the playwright `page` fixture
  * @param homeserver - the homeserver to use
  * @param credentials - the credentials to use for the bot client
+ * @param usePassphrase - whether to use a passphrase when creating the recovery key
  */
 export async function createBot(
     page: Page,
     homeserver: HomeserverInstance,
     credentials: Credentials,
+    usePassphrase = false,
 ): Promise<{ botClient: Bot; recoveryKey: GeneratedSecretStorageKey; expectedBackupVersion: string }> {
     // Visit the login page of the app, to load the matrix sdk
     await page.goto("/#/login");
@@ -44,6 +46,7 @@ export async function createBot(
     const botClient = new Bot(page, homeserver, {
         bootstrapCrossSigning: true,
         bootstrapSecretStorage: true,
+        usePassphrase,
     });
     botClient.setCredentials(credentials);
     // Backup is prepared in the background. Poll until it is ready.
@@ -214,6 +217,11 @@ export async function logIntoElement(page: Page, credentials: Credentials, secur
     // if a securityKey was given, verify the new device
     if (securityKey !== undefined) {
         await page.locator(".mx_AuthPage").getByRole("button", { name: "Verify with Security Key" }).click();
+
+        const useSecurityKey = page.locator(".mx_Dialog").getByRole("button", { name: "use your Security Key" });
+        if (await useSecurityKey.isVisible()) {
+            await useSecurityKey.click();
+        }
         // Fill in the security key
         await page.locator(".mx_Dialog").locator('input[type="password"]').fill(securityKey);
         await page.locator(".mx_Dialog_primary:not([disabled])", { hasText: "Continue" }).click();

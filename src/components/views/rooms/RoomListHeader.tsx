@@ -6,7 +6,7 @@ SPDX-License-Identifier: AGPL-3.0-only OR GPL-3.0-only OR LicenseRef-Element-Com
 Please see LICENSE files in the repository root for full details.
 */
 
-import { EventType, RoomType, Room, ClientEvent } from "matrix-js-sdk/src/matrix";
+import { EventType, RoomType, type Room, ClientEvent } from "matrix-js-sdk/src/matrix";
 import React, { useContext, useEffect, useState } from "react";
 import { Tooltip } from "@vector-im/compound-web";
 
@@ -14,17 +14,14 @@ import MatrixClientContext from "../../../contexts/MatrixClientContext";
 import { shouldShowComponent } from "../../../customisations/helpers/UIComponents";
 import { Action } from "../../../dispatcher/actions";
 import defaultDispatcher from "../../../dispatcher/dispatcher";
-import { ViewRoomPayload } from "../../../dispatcher/payloads/ViewRoomPayload";
+import { type ViewRoomPayload } from "../../../dispatcher/payloads/ViewRoomPayload";
 import { useDispatcher } from "../../../hooks/useDispatcher";
 import { useEventEmitterState, useTypedEventEmitter } from "../../../hooks/useEventEmitter";
 import { useFeatureEnabled } from "../../../hooks/useSettings";
 import { _t } from "../../../languageHandler";
 import PosthogTrackers from "../../../PosthogTrackers";
 import { UIComponent } from "../../../settings/UIFeature";
-import {
-    SpaceKey,
-    UPDATE_SELECTED_SPACE,
-} from "../../../stores/spaces";
+import { type SpaceKey, UPDATE_SELECTED_SPACE } from "../../../stores/spaces";
 import SpaceStore from "../../../stores/spaces/SpaceStore";
 import {
     shouldShowSpaceInvite,
@@ -37,7 +34,7 @@ import {
     ChevronFace,
     ContextMenuTooltipButton,
     useContextMenu,
-    MenuProps,
+    type MenuProps,
 } from "../../structures/ContextMenu";
 import { BetaPill } from "../beta/BetaCard";
 import IconizedContextMenu, {
