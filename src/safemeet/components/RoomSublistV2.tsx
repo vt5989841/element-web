@@ -1,21 +1,16 @@
 import React, { useEffect, useState } from "react";
 import { Room } from "matrix-js-sdk/src/models/room";
-import { Box, Flex, Text, VStack } from "@chakra-ui/react";
+import { Box, Flex, Text } from "@chakra-ui/react";
 
 import RoomListStore from "../../stores/room-list/RoomListStore";
-import { DefaultTagID } from "../../stores/room-list/models";
 import RoomTile from "../../components/views/rooms/RoomTile";
 import { LISTS_UPDATE_EVENT } from "../../stores/room-list/RoomListStore";
+import { useMatrixClientContext } from "@src/contexts/MatrixClientContext";
+import { CHAT_LIST_TAGS } from "@safemeet/utils";
 
 interface IProps {
     isMinimized: boolean;
 }
-
-// Tags we want to merge
-const INCLUDED_TAGS = [
-    DefaultTagID.DM,
-    DefaultTagID.Untagged, // Regular rooms
-];
 
 export const RoomSublistV2: React.FC<IProps> = ({ isMinimized }) => {
     const [rooms, setRooms] = useState<Array<{ tagId: string, room: Room }>>([]);
@@ -25,7 +20,7 @@ export const RoomSublistV2: React.FC<IProps> = ({ isMinimized }) => {
         const allRooms: Array<{ tagId: string, room: Room }> = [];
         const lists = RoomListStore.instance.orderedLists;
 
-        INCLUDED_TAGS.forEach(tagId => {
+        CHAT_LIST_TAGS.forEach(tagId => {
             if (lists[tagId]) {
                 lists[tagId].map(room => ({ tagId, room })).forEach(item => {
                     allRooms.push(item);
@@ -94,14 +89,15 @@ export const RoomSublistV2: React.FC<IProps> = ({ isMinimized }) => {
 
 // Optional: Create a separate hook for reusing room fetching logic
 export const useAllRooms = () => {
-    const [rooms, setRooms] = useState<Room[]>([]);
+    const cli = useMatrixClientContext();
+    const [rooms, setRooms] = useState<Room[]>(cli.getRooms());
 
     useEffect(() => {
         const updateRooms = () => {
             const allRooms: Room[] = [];
             const lists = RoomListStore.instance.orderedLists;
 
-            INCLUDED_TAGS.forEach(tagId => {
+            CHAT_LIST_TAGS.forEach(tagId => {
                 if (lists[tagId]) {
                     allRooms.push(...lists[tagId]);
                 }

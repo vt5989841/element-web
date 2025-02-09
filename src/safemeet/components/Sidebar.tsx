@@ -1,4 +1,4 @@
-import { Button, Flex, useRecipe } from "@chakra-ui/react";
+import { Button, Flex, useRecipe, Box } from "@chakra-ui/react";
 import React, { useEffect } from "react";
 import { HomeIcon } from "./icons/HomeIcon";
 import { ChatIcon } from "./icons/ChatIcon";
@@ -11,6 +11,8 @@ import { useTheme } from "@src/hooks/useTheme";
 import { useGlobalStore } from '../stores/useGlobalStore';
 import { Tooltip } from "./ui/tooltip";
 import { VStack } from "@chakra-ui/react";
+import { useUnreadNotificationsFromAllRooms } from "@src/safemeet/hooks/useUnreadNotificationsFromAllRooms";
+import { useUnreadCallNotifications } from "@src/safemeet/hooks/useUnreadCallNotifications";
 
 type TabType = "home" | "chats" | "meets" | "calls" | "files" | "settings" | "profile";
 
@@ -19,6 +21,8 @@ export const Sidebar = (props: { className?: string; isCollapsed?: boolean; }) =
 
     const activeTab = useGlobalStore((state) => state.sidebar.activeTab);
     const setSidebarTab = useGlobalStore((state) => state.setSidebarTab);
+    const hasUnreadMessages = useUnreadNotificationsFromAllRooms();
+    const hasUnreadCalls = useUnreadCallNotifications();
 
     const elementTheme = useTheme();
     const { setColorMode } = useColorMode();
@@ -59,12 +63,16 @@ export const Sidebar = (props: { className?: string; isCollapsed?: boolean; }) =
                     icon={<ChatIcon />}
                     label="Chats"
                     isActive={activeTab === "chats"}
-                    onClick={() => handleTabClick("chats")} />
+                    onClick={() => handleTabClick("chats")}
+                    showBadge={hasUnreadMessages}
+                />
                 <SidebarItem
                     icon={<CallIcon />}
                     label="Calls"
                     isActive={activeTab === "calls"}
-                    onClick={() => handleTabClick("calls")} />
+                    onClick={() => handleTabClick("calls")}
+                    showBadge={hasUnreadCalls}
+                />
                 <SidebarItem
                     icon={<FolderIcon />}
                     label="My Files"
@@ -91,18 +99,20 @@ interface SidebarItemProps {
     label: string;
     isActive?: boolean;
     onClick?: () => void;
+    showBadge?: boolean;
 }
 
 const SidebarItem = ({
     icon,
     label,
     isActive,
-    onClick
+    onClick,
+    showBadge
 }: SidebarItemProps) => {
     const recipe = useRecipe({ key: "button" });
     const styles = recipe({
         variant: "ghost",
-        size: "32x32" as any  // only need one size since text is no longer displayed
+        size: "32x32" as any
     });
 
     return (
@@ -115,17 +125,31 @@ const SidebarItem = ({
                 placement: "right"
             }}
         >
-            <Button
-                css={styles}
-                aria-label={label}
-                onClick={onClick}
-                bg={isActive ? "bg.subtle" : "transparent"}
-                _hover={{
-                    bg: "bg.subtle"
-                }}
-            >
-                {icon}
-            </Button>
+            <Box position="relative">
+                {showBadge && (
+                    <Box
+                        position="absolute"
+                        top={1}
+                        right={1}
+                        w={2}
+                        h={2}
+                        bg="red.500"
+                        borderRadius="full"
+                        zIndex={1}
+                    />
+                )}
+                <Button
+                    css={styles}
+                    aria-label={label}
+                    onClick={onClick}
+                    bg={isActive ? "bg.subtle" : "transparent"}
+                    _hover={{
+                        bg: "bg.subtle"
+                    }}
+                >
+                    {icon}
+                </Button>
+            </Box>
         </Tooltip>
     );
 };
