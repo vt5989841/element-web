@@ -7,10 +7,7 @@ Please see LICENSE files in the repository root for full details.
 */
 
 import React from "react";
-import classNames from "classnames";
-
-import AccessibleButton from "./AccessibleButton";
-
+import { Switch } from "@safemeet/components/ui/switch";
 interface IProps {
     // Whether or not this toggle is in the 'on' position.
     checked: boolean;
@@ -32,19 +29,24 @@ interface IProps {
 }
 
 // Controlled Toggle Switch element, written with Accessibility in mind
-export default ({ checked, disabled = false, onChange, title, tooltip, ...props }: IProps): JSX.Element => {
-    const _onClick = (): void => {
+export default ({ checked, disabled = false, onChange: onChangeProp, title, tooltip, ...props }: IProps): JSX.Element => {
+    const onChange = (): void => {
         if (disabled) return;
-        onChange(!checked);
+        onChangeProp(!checked);
     };
 
-    const classes = classNames({
-        mx_ToggleSwitch: true,
-        mx_ToggleSwitch_on: checked,
-        mx_ToggleSwitch_enabled: !disabled,
-    });
-
     return (
+        <Switch
+            {...props}
+            checked={checked}
+            disabled={disabled}
+            onChange={onChange}
+            aria-label={title}
+            aria-checked={checked}
+            aria-disabled={disabled}
+            title={tooltip}
+        />
+        /*
         <AccessibleButton
             {...props}
             className={classes}
@@ -57,5 +59,6 @@ export default ({ checked, disabled = false, onChange, title, tooltip, ...props 
         >
             <div className="mx_ToggleSwitch_ball" />
         </AccessibleButton>
+        */
     );
 };

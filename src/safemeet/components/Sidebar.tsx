@@ -6,17 +6,17 @@ import { MeetIcon } from "./icons/MeetIcon";
 import { CallIcon } from "./icons/CallIcon";
 import { FolderIcon } from "./icons/FolderIcon";
 import { useColorMode } from "./ui/color-mode";
-import { SettingIcon } from "./icons/SettingIcon";
 import UserMenu from "@components/structures/UserMenu";
 import { useTheme } from "@src/hooks/useTheme";
 import { useGlobalStore } from '../stores/useGlobalStore';
 import { Tooltip } from "./ui/tooltip";
+import { VStack } from "@chakra-ui/react";
 
-type TabType = "home" | "chats" | "meets" | "calls" | "files";
+type TabType = "home" | "chats" | "meets" | "calls" | "files" | "settings" | "profile";
 
 export const Sidebar = (props: { className?: string; isCollapsed?: boolean; }) => {
     const { className, isCollapsed } = props;
-    
+
     const activeTab = useGlobalStore((state) => state.sidebar.activeTab);
     const setSidebarTab = useGlobalStore((state) => state.setSidebarTab);
 
@@ -41,8 +41,10 @@ export const Sidebar = (props: { className?: string; isCollapsed?: boolean; }) =
             className={className}
             css={styles}
             colorPalette="brand"
-            pt={12}>
-            <Flex direction="column" alignItems="center" gap={4}>
+            pt={12}
+            direction="column"
+            h="100vh">
+            <Flex direction="column" alignItems="center" gap={4} flex={1}>
                 <SidebarItem
                     icon={<HomeIcon />}
                     label="Home"
@@ -69,12 +71,17 @@ export const Sidebar = (props: { className?: string; isCollapsed?: boolean; }) =
                     isActive={activeTab === "files"}
                     onClick={() => handleTabClick("files")} />
             </Flex>
-            <Flex direction="column" p={2} alignItems="center" justifyContent="center" gap={4}>
-                <SidebarItem
-                    icon={<SettingIcon />}
-                    label="Settings" />
+            {/* Bottom menu items */}
+            <VStack>
+                {/* <SidebarItem
+                    icon={<SettingsIcon />}
+                    label="Settings"
+                    onClick={() => { }}
+                    isActive={activeTab === "settings"}
+                /> */}
+                {/* <UserSidebarItem /> */}
                 <UserMenu isPanelCollapsed />
-            </Flex>
+            </VStack>
         </Flex>
     );
 };
@@ -86,11 +93,11 @@ interface SidebarItemProps {
     onClick?: () => void;
 }
 
-const SidebarItem = ({ 
-    icon, 
+const SidebarItem = ({
+    icon,
     label,
     isActive,
-    onClick 
+    onClick
 }: SidebarItemProps) => {
     const recipe = useRecipe({ key: "button" });
     const styles = recipe({

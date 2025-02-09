@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 
-export type SidebarItemType = "home" | "chats" | "meets" | "calls" | "files";
+export type SidebarItemType = "home" | "chats" | "meets" | "calls" | "files" | "settings" | "profile";
 
 export interface GlobalState {
   // Sidebar state
@@ -9,6 +9,18 @@ export interface GlobalState {
   };
   // Sidebar actions
   setSidebarTab: (tab: SidebarItemType) => void;
+  
+  // Thêm settings state
+  settings: {
+    isOpen: boolean;
+  };
+  setSettingsOpen: (isOpen: boolean) => void;
+  
+  // Thêm profile state 
+  profile: {
+    isOpen: boolean;
+  };
+  setProfileOpen: (isOpen: boolean) => void;
   
   // Thêm các state và actions khác trong tương lai
   // example: {
@@ -21,12 +33,26 @@ export interface GlobalState {
 
 export const useGlobalStore = create<GlobalState>((set) => ({
   sidebar: {
-    activeTab: "chats",
+    activeTab: "home",
   },
   setSidebarTab: (tab) => set((state) => ({
     sidebar: {
       ...state.sidebar,
       activeTab: tab,
     }
+  })),
+  
+  settings: {
+    isOpen: false,
+  },
+  setSettingsOpen: (isOpen) => set((state) => ({
+    settings: { ...state.settings, isOpen },
+  })),
+  
+  profile: {
+    isOpen: false, 
+  },
+  setProfileOpen: (isOpen) => set((state) => ({
+    profile: { ...state.profile, isOpen },
   })),
 })); 
