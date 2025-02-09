@@ -30,8 +30,8 @@ const semanticTokens = defineSemanticTokens({
   colors: {
     "bg.surface": {
       value: { 
-        base: "{colors.white}",
-        _dark: "{colors.gray.800}" 
+        _light: "{colors.gray.50}", // #F5F5F5
+        _dark: "{colors.gray.800}",
       }
     },
     "bg.subtle": {

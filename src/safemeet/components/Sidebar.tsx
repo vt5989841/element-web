@@ -40,7 +40,8 @@ export const Sidebar = (props: { className?: string; isCollapsed?: boolean; }) =
         <Flex
             className={className}
             css={styles}
-            colorPalette="brand">
+            colorPalette="brand"
+            pt={12}>
             <Flex direction="column" alignItems="center" gap={4}>
                 <SidebarItem
                     icon={<HomeIcon />}
@@ -94,7 +95,7 @@ const SidebarItem = ({
     const recipe = useRecipe({ key: "button" });
     const styles = recipe({
         variant: "ghost",
-        size: "32x32" as any  // giờ chỉ cần một size vì không còn hiển thị text
+        size: "32x32" as any  // only need one size since text is no longer displayed
     });
 
     return (

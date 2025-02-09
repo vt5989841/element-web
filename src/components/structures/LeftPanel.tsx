@@ -38,6 +38,7 @@ import type PageType from "../../PageTypes";
 import { Landmark, LandmarkNavigation } from "../../accessibility/LandmarkNavigation";
 import { SidebarItemType, useGlobalStore } from "@safemeet/stores/useGlobalStore";
 import { CallList } from "@safemeet/components/CallList";
+import { Box } from "@chakra-ui/react";
 
 interface IProps {
     isMinimized: boolean;
@@ -397,7 +398,11 @@ export default class LeftPanel extends React.Component<IProps, IState> {
         const roomListClasses = classNames("mx_LeftPanel_actualRoomListContainer", "mx_AutoHideScrollbar");
 
         return (
-            <div className={containerClasses}>
+            <Box
+                className={containerClasses}
+                bg="bg.surface"
+                borderRight="1px solid"
+                borderColor="border.default">
                 <div className="mx_LeftPanel_roomListContainer">
                     <RoomListHeader title="Chats" onVisibilityChange={this.refreshStickyHeaders} />
                     {shouldShowComponent(UIComponent.FilterContainer) && this.renderSearchDialExplore()}
@@ -429,7 +434,7 @@ export default class LeftPanel extends React.Component<IProps, IState> {
                         </nav>
                     )}
                 </div>
-            </div>
+            </Box>
         );
     }
 }

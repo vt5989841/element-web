@@ -17,7 +17,7 @@ export const CallList: React.FC<IProps> = ({ isMinimized }) => {
 
     const updateRecentCalls = useCallback(() => {
         const callRooms = rooms.filter(room => {
-            // Kiểm tra xem phòng có cuộc gọi đang diễn ra hoặc gần đây
+            // Check if the room has ongoing or recent calls
             const lastCallEvent = room.getLiveTimeline().getEvents().find(event => 
                 event.getType() === "m.call.hangup" || 
                 event.getType() === "m.call.invite"
@@ -25,7 +25,7 @@ export const CallList: React.FC<IProps> = ({ isMinimized }) => {
             return lastCallEvent !== undefined;
         });
 
-        // Sắp xếp theo thời gian gần đây nhất
+        // Sort by most recent time
         const sortedCallRooms = callRooms.map(room => {
             const lastCallEvent = room.getLiveTimeline().getEvents().find(event =>
                 event.getType() === "m.call.hangup" ||
@@ -41,7 +41,7 @@ export const CallList: React.FC<IProps> = ({ isMinimized }) => {
     }, [rooms]);
 
     useEffect(() => {
-        updateRecentCalls(); // Khởi tạo lần đầu
+        updateRecentCalls(); // Initial load
     }, [updateRecentCalls]);
 
     const renderCalls = () => {

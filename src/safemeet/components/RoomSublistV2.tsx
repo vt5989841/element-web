@@ -11,7 +11,7 @@ interface IProps {
     isMinimized: boolean;
 }
 
-// Các tag chúng ta muốn merge
+// Tags we want to merge
 const INCLUDED_TAGS = [
     DefaultTagID.DM,
     DefaultTagID.Untagged, // Regular rooms
@@ -20,7 +20,7 @@ const INCLUDED_TAGS = [
 export const RoomSublistV2: React.FC<IProps> = ({ isMinimized }) => {
     const [rooms, setRooms] = useState<Array<{ tagId: string, room: Room }>>([]);
 
-    // Lấy và merge rooms từ nhiều tags
+    // Get and merge rooms from multiple tags
     const updateRooms = () => {
         const allRooms: Array<{ tagId: string, room: Room }> = [];
         const lists = RoomListStore.instance.orderedLists;
@@ -33,12 +33,12 @@ export const RoomSublistV2: React.FC<IProps> = ({ isMinimized }) => {
             }
         });
 
-        // Sắp xếp theo thời gian hoạt động gần đây nhất
+        // Sort by most recent activity
         const sortedRooms = allRooms.sort((a, b) => {
             return b.room.getLastActiveTimestamp() - a.room.getLastActiveTimestamp();
         });
 
-        // Loại bỏ các phòng trùng lặp (nếu một phòng thuộc nhiều tag)
+        // Remove duplicate rooms (if a room belongs to multiple tags)
         const uniqueRooms = Array.from(new Map(
             sortedRooms.map(item => [item.room.roomId, item])
         ).values());
@@ -47,20 +47,20 @@ export const RoomSublistV2: React.FC<IProps> = ({ isMinimized }) => {
     };
 
     useEffect(() => {
-        // Lắng nghe sự thay đổi của room list
+        // Listen for room list changes
         const onListsUpdate = () => {
             updateRooms();
         };
 
         RoomListStore.instance.on(LISTS_UPDATE_EVENT, onListsUpdate);
-        updateRooms(); // Khởi tạo lần đầu
+        updateRooms(); // Initial load
 
         return () => {
             RoomListStore.instance.off(LISTS_UPDATE_EVENT, onListsUpdate);
         };
     }, []);
 
-    // Render danh sách phòng
+    // Render room list
     const renderRooms = () => {
         return rooms.map((item) => {
             return (
@@ -92,7 +92,7 @@ export const RoomSublistV2: React.FC<IProps> = ({ isMinimized }) => {
     );
 };
 
-// Tùy chọn: Tạo hook riêng để tái sử dụng logic lấy rooms
+// Optional: Create a separate hook for reusing room fetching logic
 export const useAllRooms = () => {
     const [rooms, setRooms] = useState<Room[]>([]);
 
